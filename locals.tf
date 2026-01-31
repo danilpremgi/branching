@@ -30,13 +30,13 @@ locals {
     version   = "latest"
   }
   primary_vms = {
-    "01" = {
+    "dc-01" = {
       vm_name       = "vm-dc-01"
       nic_name      = "nic-vm-dc-01"
       computer_name = "DC01"
       zone          = "1"
     }
-    "02" = {
+    "dc-02" = {
       vm_name       = "vm-dc-02"
       nic_name      = "nic-vm-dc-02"
       computer_name = "DC02"
@@ -44,13 +44,13 @@ locals {
     }
   }
   secondary_vms = {
-    "01" = {
+    "rca" = {
       vm_name       = "rca"
       nic_name      = "nic-rca-01"
       computer_name = "RCA"
       zone          = null
     }
-    "02" = {
+    "ica" = {
       vm_name       = "ica"
       nic_name      = "nic-ica-01"
       computer_name = "ICA"
