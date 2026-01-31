@@ -41,3 +41,8 @@ output "tertiary_vm_private_ip" {
 output "jumpbox_public_ip" {
   value = azurerm_public_ip.jumpbox.ip_address
 }
+
+output "admin_password" {
+  value     = random_password.admin.result
+  sensitive = true
+}

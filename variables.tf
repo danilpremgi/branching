@@ -37,10 +37,5 @@ variable "jumpbox_allowed_cidr" {
 variable "admin_username" {
   type        = string
   description = "Admin username for the Windows VMs."
-}
-
-variable "admin_password" {
-  type        = string
-  description = "Admin password for the Windows VMs."
-  sensitive   = true
+  default     = "adm_azure"
 }

@@ -6,6 +6,10 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "~> 3.0"
     }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.0"
+    }
   }
 }
 
@@ -16,6 +20,15 @@ provider "azurerm" {
 resource "azurerm_resource_group" "main" {
   name     = var.resource_group_name
   location = var.location
+}
+
+resource "random_password" "admin" {
+  length           = 20
+  min_lower        = 1
+  min_upper        = 1
+  min_numeric      = 1
+  min_special      = 1
+  override_special = "!@#%^*-_=+?"
 }
 
 resource "azurerm_virtual_network" "main" {
@@ -189,7 +202,7 @@ resource "azurerm_windows_virtual_machine" "jumpbox" {
   resource_group_name = azurerm_resource_group.main.name
   size                = var.jumpbox_vm_size
   admin_username      = var.admin_username
-  admin_password      = var.admin_password
+  admin_password      = random_password.admin.result
   network_interface_ids = [
     azurerm_network_interface.jumpbox.id
   ]
@@ -227,11 +240,11 @@ resource "azurerm_windows_virtual_machine" "vm" {
   resource_group_name = azurerm_resource_group.main.name
   size                = var.vm_size
   admin_username      = var.admin_username
-  admin_password      = var.admin_password
+  admin_password      = random_password.admin.result
   network_interface_ids = [
     azurerm_network_interface.vm[count.index].id
   ]
-  availability_zone = tostring(count.index + 1)
+  zone = tostring(count.index + 1)
 
   os_disk {
     caching              = "ReadWrite"
@@ -266,7 +279,7 @@ resource "azurerm_windows_virtual_machine" "secondary_vm" {
   resource_group_name = azurerm_resource_group.main.name
   size                = var.vm_size
   admin_username      = var.admin_username
-  admin_password      = var.admin_password
+  admin_password      = random_password.admin.result
   network_interface_ids = [
     azurerm_network_interface.secondary_vm[count.index].id
   ]
@@ -302,7 +315,7 @@ resource "azurerm_windows_virtual_machine" "tertiary_vm" {
   resource_group_name = azurerm_resource_group.main.name
   size                = var.vm_size
   admin_username      = var.admin_username
-  admin_password      = var.admin_password
+  admin_password      = random_password.admin.result
   network_interface_ids = [
     azurerm_network_interface.tertiary_vm.id
   ]

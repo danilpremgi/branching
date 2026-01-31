@@ -9,12 +9,8 @@ This repository provisions Azure infrastructure in UK South with a hub-and-spoke
 ## Usage
 ```bash
 terraform init
-terraform plan \
-  -var "admin_username=azureadmin" \
-  -var "admin_password=ReplaceWithAStrongPassword"
-terraform apply \
-  -var "admin_username=azureadmin" \
-  -var "admin_password=ReplaceWithAStrongPassword"
+terraform plan
+terraform apply
 ```
 
 ## Notes
