@@ -14,7 +14,7 @@ terraform apply
 ```
 
 ## Notes
-- A NAT Gateway handles outbound access for all subnets.
+- NAT Gateways handle outbound access for each virtual network/subnet.
 - A jumpbox VM in the hub virtual network is exposed via a public IP to reach the private VMs.
 - An NSG is applied only to the jumpbox NIC to allow inbound RDP from the configured CIDR.
 - VMs are deployed into availability zones 1 and 2 for the primary subnet; secondary subnet VMs are not zonal.

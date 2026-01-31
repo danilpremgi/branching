@@ -28,7 +28,12 @@ locals {
   subnet_secondary_name      = "${local.prefix}-snet-secondary"
   subnet_tertiary_name       = "${local.prefix}-snet-tertiary"
   nat_pip_name               = "${local.prefix}-pip-nat"
-  nat_name                   = "${local.prefix}-natgw"
+  nat_hub_pip_name           = "${local.prefix}-pip-nat-hub"
+  nat_main_pip_name          = "${local.prefix}-pip-nat-main"
+  nat_tertiary_pip_name      = "${local.prefix}-pip-nat-tertiary"
+  nat_hub_name               = "${local.prefix}-natgw-hub"
+  nat_main_name              = "${local.prefix}-natgw-main"
+  nat_tertiary_name          = "${local.prefix}-natgw-tertiary"
   jumpbox_pip_name           = "${local.prefix}-pip-jumpbox"
   jumpbox_nsg_name           = "${local.prefix}-nsg-jumpbox"
   jumpbox_nic_name           = "${local.prefix}-nic-jumpbox"
@@ -108,29 +113,69 @@ resource "azurerm_subnet" "tertiary" {
   address_prefixes     = ["10.1.1.0/24"]
 }
 
-resource "azurerm_public_ip" "nat" {
-  name                = local.nat_pip_name
+resource "azurerm_public_ip" "nat_hub" {
+  name                = local.nat_hub_pip_name
   location            = azurerm_resource_group.main.location
   resource_group_name = local.rg_name
   allocation_method   = "Static"
   sku                 = "Standard"
 }
 
-resource "azurerm_nat_gateway" "main" {
-  name                = local.nat_name
+resource "azurerm_public_ip" "nat_main" {
+  name                = local.nat_main_pip_name
+  location            = azurerm_resource_group.main.location
+  resource_group_name = local.rg_name
+  allocation_method   = "Static"
+  sku                 = "Standard"
+}
+
+resource "azurerm_public_ip" "nat_tertiary" {
+  name                = local.nat_tertiary_pip_name
+  location            = azurerm_resource_group.main.location
+  resource_group_name = local.rg_name
+  allocation_method   = "Static"
+  sku                 = "Standard"
+}
+
+resource "azurerm_nat_gateway" "hub" {
+  name                = local.nat_hub_name
   location            = azurerm_resource_group.main.location
   resource_group_name = local.rg_name
   sku_name            = "Standard"
 }
 
+resource "azurerm_nat_gateway" "main" {
+  name                = local.nat_main_name
+  location            = azurerm_resource_group.main.location
+  resource_group_name = local.rg_name
+  sku_name            = "Standard"
+}
+
+resource "azurerm_nat_gateway" "tertiary" {
+  name                = local.nat_tertiary_name
+  location            = azurerm_resource_group.main.location
+  resource_group_name = local.rg_name
+  sku_name            = "Standard"
+}
+
+resource "azurerm_nat_gateway_public_ip_association" "hub" {
+  nat_gateway_id       = azurerm_nat_gateway.hub.id
+  public_ip_address_id = azurerm_public_ip.nat_hub.id
+}
+
 resource "azurerm_nat_gateway_public_ip_association" "main" {
   nat_gateway_id       = azurerm_nat_gateway.main.id
-  public_ip_address_id = azurerm_public_ip.nat.id
+  public_ip_address_id = azurerm_public_ip.nat_main.id
+}
+
+resource "azurerm_nat_gateway_public_ip_association" "tertiary" {
+  nat_gateway_id       = azurerm_nat_gateway.tertiary.id
+  public_ip_address_id = azurerm_public_ip.nat_tertiary.id
 }
 
 resource "azurerm_subnet_nat_gateway_association" "hub" {
   subnet_id      = azurerm_subnet.hub.id
-  nat_gateway_id = azurerm_nat_gateway.main.id
+  nat_gateway_id = azurerm_nat_gateway.hub.id
 }
 
 resource "azurerm_subnet_nat_gateway_association" "main" {
@@ -145,7 +190,7 @@ resource "azurerm_subnet_nat_gateway_association" "secondary" {
 
 resource "azurerm_subnet_nat_gateway_association" "tertiary" {
   subnet_id      = azurerm_subnet.tertiary.id
-  nat_gateway_id = azurerm_nat_gateway.main.id
+  nat_gateway_id = azurerm_nat_gateway.tertiary.id
 }
 
 resource "azurerm_virtual_network_peering" "hub_to_main" {
@@ -360,7 +405,7 @@ resource "azurerm_windows_virtual_machine" "tertiary_vm" {
   source_image_reference {
     publisher = "MicrosoftWindowsDesktop"
     offer     = "windows-11"
-    sku       = "win11-21h2-pro"
+    sku       = "win11-23h2-pro"
     version   = "latest"
   }
 }
