@@ -10,12 +10,6 @@ variable "location" {
   default     = "UKSouth"
 }
 
-variable "name_prefix" {
-  type        = string
-  description = "Prefix used for naming resources."
-  default     = "uksouth-win"
-}
-
 variable "vm_size" {
   type        = string
   description = "Azure VM size."

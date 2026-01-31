@@ -44,7 +44,6 @@ output "jumpbox_public_ip" {
 
 output "admin_password" {
   value     = random_password.admin.result
-  sensitive = true
 }
 
 output "nat_gateway_public_ips" {

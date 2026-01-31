@@ -18,32 +18,30 @@ provider "azurerm" {
 }
 
 locals {
-  prefix                     = var.name_prefix
   rg_name                    = var.resource_group_name
-  vnet_main_name             = "${local.prefix}-vnet"
-  vnet_hub_name              = "${local.prefix}-vnet-hub"
-  vnet_tertiary_name         = "${local.prefix}-vnet-tertiary"
-  subnet_hub_name            = "${local.prefix}-snet-hub"
-  subnet_main_name           = "${local.prefix}-snet-main"
-  subnet_secondary_name      = "${local.prefix}-snet-secondary"
-  subnet_tertiary_name       = "${local.prefix}-snet-tertiary"
-  nat_pip_name               = "${local.prefix}-pip-nat"
-  nat_hub_pip_name           = "${local.prefix}-pip-nat-hub"
-  nat_main_pip_name          = "${local.prefix}-pip-nat-main"
-  nat_tertiary_pip_name      = "${local.prefix}-pip-nat-tertiary"
-  nat_hub_name               = "${local.prefix}-natgw-hub"
-  nat_main_name              = "${local.prefix}-natgw-main"
-  nat_tertiary_name          = "${local.prefix}-natgw-tertiary"
-  jumpbox_pip_name           = "${local.prefix}-pip-jumpbox"
-  jumpbox_nsg_name           = "${local.prefix}-nsg-jumpbox"
-  jumpbox_nic_name           = "${local.prefix}-nic-jumpbox"
-  jumpbox_vm_name            = "${local.prefix}-vm-jumpbox"
-  vm_primary_name_prefix     = "${local.prefix}-vm"
-  vm_secondary_name_prefix   = "${local.prefix}-vm-secondary"
-  vm_tertiary_name           = "${local.prefix}-vm-win11"
-  vm_primary_nic_prefix      = "${local.prefix}-nic"
-  vm_secondary_nic_prefix    = "${local.prefix}-nic-secondary"
-  vm_tertiary_nic_name       = "${local.prefix}-nic-win11"
+  vnet_main_name             = "vnet-main"
+  vnet_hub_name              = "vnet-hub"
+  vnet_tertiary_name         = "vnet-tertiary"
+  subnet_hub_name            = "snet-hub"
+  subnet_main_name           = "snet-main"
+  subnet_secondary_name      = "snet-secondary"
+  subnet_tertiary_name       = "snet-tertiary"
+  nat_hub_pip_name           = "pip-nat-hub"
+  nat_main_pip_name          = "pip-nat-main"
+  nat_tertiary_pip_name      = "pip-nat-tertiary"
+  nat_hub_name               = "natgw-hub"
+  nat_main_name              = "natgw-main"
+  nat_tertiary_name          = "natgw-tertiary"
+  jumpbox_pip_name           = "pip-jumpbox"
+  jumpbox_nsg_name           = "nsg-jumpbox"
+  jumpbox_nic_name           = "nic-jumpbox-01"
+  jumpbox_vm_name            = "vm-jumpbox-01"
+  vm_primary_name_prefix     = "vm"
+  vm_secondary_name_prefix   = "vm-secondary"
+  vm_tertiary_name           = "vm-win11-01"
+  vm_primary_nic_prefix      = "nic"
+  vm_secondary_nic_prefix    = "nic-secondary"
+  vm_tertiary_nic_name       = "nic-win11-01"
   jumpbox_computer_name      = "AZJUMP01"
   primary_computer_names     = ["AZVM01", "AZVM02"]
   secondary_computer_names   = ["AZSEC01", "AZSEC02"]
@@ -194,7 +192,7 @@ resource "azurerm_subnet_nat_gateway_association" "tertiary" {
 }
 
 resource "azurerm_virtual_network_peering" "hub_to_main" {
-  name                      = "${local.prefix}-peer-hub-main"
+  name                      = "peer-hub-main"
   resource_group_name       = local.rg_name
   virtual_network_name      = azurerm_virtual_network.hub.name
   remote_virtual_network_id = azurerm_virtual_network.main.id
@@ -202,7 +200,7 @@ resource "azurerm_virtual_network_peering" "hub_to_main" {
 }
 
 resource "azurerm_virtual_network_peering" "main_to_hub" {
-  name                      = "${local.prefix}-peer-main-hub"
+  name                      = "peer-main-hub"
   resource_group_name       = local.rg_name
   virtual_network_name      = azurerm_virtual_network.main.name
   remote_virtual_network_id = azurerm_virtual_network.hub.id
@@ -210,7 +208,7 @@ resource "azurerm_virtual_network_peering" "main_to_hub" {
 }
 
 resource "azurerm_virtual_network_peering" "hub_to_tertiary" {
-  name                      = "${local.prefix}-peer-hub-tertiary"
+  name                      = "peer-hub-tertiary"
   resource_group_name       = local.rg_name
   virtual_network_name      = azurerm_virtual_network.hub.name
   remote_virtual_network_id = azurerm_virtual_network.tertiary.id
@@ -218,7 +216,7 @@ resource "azurerm_virtual_network_peering" "hub_to_tertiary" {
 }
 
 resource "azurerm_virtual_network_peering" "tertiary_to_hub" {
-  name                      = "${local.prefix}-peer-tertiary-hub"
+  name                      = "peer-tertiary-hub"
   resource_group_name       = local.rg_name
   virtual_network_name      = azurerm_virtual_network.tertiary.name
   remote_virtual_network_id = azurerm_virtual_network.hub.id
@@ -296,7 +294,7 @@ resource "azurerm_windows_virtual_machine" "jumpbox" {
 
 resource "azurerm_network_interface" "vm" {
   count               = 2
-  name                = "${local.vm_primary_nic_prefix}-${count.index + 1}"
+  name                = "${local.vm_primary_nic_prefix}-${format("%02d", count.index + 1)}"
   location            = azurerm_resource_group.main.location
   resource_group_name = local.rg_name
 
@@ -309,7 +307,7 @@ resource "azurerm_network_interface" "vm" {
 
 resource "azurerm_windows_virtual_machine" "vm" {
   count               = 2
-  name                = "${local.vm_primary_name_prefix}-${count.index + 1}"
+  name                = "${local.vm_primary_name_prefix}-${format("%02d", count.index + 1)}"
   location            = azurerm_resource_group.main.location
   resource_group_name = local.rg_name
   size                = var.vm_size
@@ -336,7 +334,7 @@ resource "azurerm_windows_virtual_machine" "vm" {
 
 resource "azurerm_network_interface" "secondary_vm" {
   count               = 2
-  name                = "${local.vm_secondary_nic_prefix}-${count.index + 1}"
+  name                = "${local.vm_secondary_nic_prefix}-${format("%02d", count.index + 1)}"
   location            = azurerm_resource_group.main.location
   resource_group_name = local.rg_name
 
@@ -349,7 +347,7 @@ resource "azurerm_network_interface" "secondary_vm" {
 
 resource "azurerm_windows_virtual_machine" "secondary_vm" {
   count               = 2
-  name                = "${local.vm_secondary_name_prefix}-${count.index + 1}"
+  name                = "${local.vm_secondary_name_prefix}-${format("%02d", count.index + 1)}"
   location            = azurerm_resource_group.main.location
   resource_group_name = local.rg_name
   size                = var.vm_size
