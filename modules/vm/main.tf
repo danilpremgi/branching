@@ -29,20 +29,32 @@ resource "azurerm_windows_virtual_machine" "this" {
     storage_account_type = "Standard_LRS"
   }
 
-  dynamic "data_disk" {
-    for_each = var.data_disks
-    content {
-      lun                  = data_disk.value.lun
-      caching              = data_disk.value.caching
-      storage_account_type = data_disk.value.storage_account_type
-      disk_size_gb         = data_disk.value.disk_size_gb
-    }
-  }
-
   source_image_reference {
     publisher = var.source_image_reference.publisher
     offer     = var.source_image_reference.offer
     sku       = var.source_image_reference.sku
     version   = var.source_image_reference.version
   }
+}
+
+locals {
+  data_disks_by_lun = { for disk in var.data_disks : disk.lun => disk }
+}
+
+resource "azurerm_managed_disk" "data" {
+  for_each             = local.data_disks_by_lun
+  name                 = "${var.vm_name}-data-${format("%02d", each.value.lun)}"
+  location             = var.location
+  resource_group_name  = var.resource_group_name
+  storage_account_type = each.value.storage_account_type
+  create_option        = "Empty"
+  disk_size_gb         = each.value.disk_size_gb
+}
+
+resource "azurerm_virtual_machine_data_disk_attachment" "data" {
+  for_each           = azurerm_managed_disk.data
+  managed_disk_id    = each.value.id
+  virtual_machine_id = azurerm_windows_virtual_machine.this.id
+  lun                = each.key
+  caching            = local.data_disks_by_lun[each.key].caching
 }
