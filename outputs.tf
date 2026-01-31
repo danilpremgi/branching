@@ -49,6 +49,10 @@ output "admin_password" {
 
 output "nat_gateway_public_ips" {
   value = {
-    hub = azurerm_public_ip.nat_hub.ip_address
+    firewall = azurerm_public_ip.firewall.ip_address
   }
+}
+
+output "firewall_private_ip" {
+  value = azurerm_firewall.hub.ip_configuration[0].private_ip_address
 }

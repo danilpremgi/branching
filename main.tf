@@ -40,6 +40,13 @@ resource "azurerm_subnet" "hub" {
   address_prefixes     = ["10.2.1.0/24"]
 }
 
+resource "azurerm_subnet" "firewall" {
+  name                 = local.subnet_firewall_name
+  resource_group_name  = local.rg_name
+  virtual_network_name = azurerm_virtual_network.hub.name
+  address_prefixes     = ["10.2.2.0/24"]
+}
+
 resource "azurerm_subnet" "main" {
   name                 = local.subnet_main_name
   resource_group_name  = local.rg_name
@@ -61,29 +68,56 @@ resource "azurerm_subnet" "tertiary" {
   address_prefixes     = ["10.1.1.0/24"]
 }
 
-resource "azurerm_public_ip" "nat_hub" {
-  name                = local.nat_hub_pip_name
+resource "azurerm_public_ip" "firewall" {
+  name                = local.firewall_pip_name
   location            = azurerm_resource_group.main.location
   resource_group_name = local.rg_name
   allocation_method   = "Static"
   sku                 = "Standard"
 }
 
-resource "azurerm_nat_gateway" "hub" {
-  name                = local.nat_hub_name
+resource "azurerm_firewall" "hub" {
+  name                = local.firewall_name
   location            = azurerm_resource_group.main.location
   resource_group_name = local.rg_name
-  sku_name            = "Standard"
+  sku_name            = "AZFW_VNet"
+  sku_tier            = "Standard"
+
+  ip_configuration {
+    name                 = "configuration"
+    subnet_id            = azurerm_subnet.firewall.id
+    public_ip_address_id = azurerm_public_ip.firewall.id
+  }
 }
 
-resource "azurerm_nat_gateway_public_ip_association" "hub" {
-  nat_gateway_id       = azurerm_nat_gateway.hub.id
-  public_ip_address_id = azurerm_public_ip.nat_hub.id
+resource "azurerm_route_table" "egress" {
+  name                = local.route_table_name
+  location            = azurerm_resource_group.main.location
+  resource_group_name = local.rg_name
 }
 
-resource "azurerm_subnet_nat_gateway_association" "hub" {
-  subnet_id      = azurerm_subnet.hub.id
-  nat_gateway_id = azurerm_nat_gateway.hub.id
+resource "azurerm_route" "egress" {
+  name                   = "default-egress"
+  resource_group_name    = local.rg_name
+  route_table_name       = azurerm_route_table.egress.name
+  address_prefix         = "0.0.0.0/0"
+  next_hop_type          = "VirtualAppliance"
+  next_hop_in_ip_address = azurerm_firewall.hub.ip_configuration[0].private_ip_address
+}
+
+resource "azurerm_subnet_route_table_association" "main" {
+  subnet_id      = azurerm_subnet.main.id
+  route_table_id = azurerm_route_table.egress.id
+}
+
+resource "azurerm_subnet_route_table_association" "secondary" {
+  subnet_id      = azurerm_subnet.secondary.id
+  route_table_id = azurerm_route_table.egress.id
+}
+
+resource "azurerm_subnet_route_table_association" "tertiary" {
+  subnet_id      = azurerm_subnet.tertiary.id
+  route_table_id = azurerm_route_table.egress.id
 }
 
 
@@ -127,6 +161,17 @@ resource "azurerm_public_ip" "jumpbox" {
   sku                 = "Standard"
 }
 
+resource "azurerm_network_security_group" "jumpbox" {
+  name                = "nsg-jumpbox"
+  location            = azurerm_resource_group.main.location
+  resource_group_name = local.rg_name
+}
+
+resource "azurerm_network_interface_security_group_association" "jumpbox" {
+  network_interface_id      = module.jumpbox_vm.nic_id
+  network_security_group_id = azurerm_network_security_group.jumpbox.id
+}
+
 module "jumpbox_vm" {
   source              = "./modules/vm"
   vm_name             = local.jumpbox_vm_name
@@ -140,6 +185,24 @@ module "jumpbox_vm" {
   admin_username      = var.admin_username
   admin_password      = random_password.admin.result
   source_image_reference = local.windows_server_image
+}
+
+resource "azurerm_security_center_jit_network_access_policy" "jumpbox" {
+  name                = "jit-jumpbox"
+  location            = azurerm_resource_group.main.location
+  resource_group_name = local.rg_name
+  kind                = "Basic"
+
+  virtual_machine {
+    id = module.jumpbox_vm.vm_id
+
+    port {
+      number                     = 3389
+      protocol                   = "*"
+      allowed_source_address_prefix = "*"
+      max_request_access_duration   = "PT3H"
+    }
+  }
 }
 
 module "primary_vms" {
