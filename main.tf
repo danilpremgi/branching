@@ -187,24 +187,6 @@ module "jumpbox_vm" {
   source_image_reference = local.windows_server_image
 }
 
-resource "azurerm_security_center_jit_network_access_policy" "jumpbox" {
-  name                = "jit-jumpbox"
-  location            = azurerm_resource_group.main.location
-  resource_group_name = local.rg_name
-  kind                = "Basic"
-
-  virtual_machine {
-    id = module.jumpbox_vm.vm_id
-
-    port {
-      number                     = 3389
-      protocol                   = "*"
-      allowed_source_address_prefix = "*"
-      max_request_access_duration   = "PT3H"
-    }
-  }
-}
-
 module "primary_vms" {
   source              = "./modules/vm"
   for_each            = local.primary_vms
