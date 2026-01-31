@@ -17,8 +17,36 @@ provider "azurerm" {
   features {}
 }
 
+locals {
+  prefix                     = var.name_prefix
+  rg_name                    = var.resource_group_name
+  vnet_main_name             = "${local.prefix}-vnet"
+  vnet_hub_name              = "${local.prefix}-vnet-hub"
+  vnet_tertiary_name         = "${local.prefix}-vnet-tertiary"
+  subnet_hub_name            = "${local.prefix}-snet-hub"
+  subnet_main_name           = "${local.prefix}-snet-main"
+  subnet_secondary_name      = "${local.prefix}-snet-secondary"
+  subnet_tertiary_name       = "${local.prefix}-snet-tertiary"
+  nat_pip_name               = "${local.prefix}-pip-nat"
+  nat_name                   = "${local.prefix}-natgw"
+  jumpbox_pip_name           = "${local.prefix}-pip-jumpbox"
+  jumpbox_nsg_name           = "${local.prefix}-nsg-jumpbox"
+  jumpbox_nic_name           = "${local.prefix}-nic-jumpbox"
+  jumpbox_vm_name            = "${local.prefix}-vm-jumpbox"
+  vm_primary_name_prefix     = "${local.prefix}-vm"
+  vm_secondary_name_prefix   = "${local.prefix}-vm-secondary"
+  vm_tertiary_name           = "${local.prefix}-vm-win11"
+  vm_primary_nic_prefix      = "${local.prefix}-nic"
+  vm_secondary_nic_prefix    = "${local.prefix}-nic-secondary"
+  vm_tertiary_nic_name       = "${local.prefix}-nic-win11"
+  jumpbox_computer_name      = "AZJUMP01"
+  primary_computer_names     = ["AZVM01", "AZVM02"]
+  secondary_computer_names   = ["AZSEC01", "AZSEC02"]
+  tertiary_computer_name     = "AZW11VM01"
+}
+
 resource "azurerm_resource_group" "main" {
-  name     = var.resource_group_name
+  name     = local.rg_name
   location = var.location
 }
 
@@ -32,66 +60,66 @@ resource "random_password" "admin" {
 }
 
 resource "azurerm_virtual_network" "main" {
-  name                = "${var.name_prefix}-vnet"
+  name                = local.vnet_main_name
   address_space       = ["10.0.0.0/16"]
   location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
+  resource_group_name = local.rg_name
 }
 
 resource "azurerm_virtual_network" "hub" {
-  name                = "${var.name_prefix}-vnet-hub"
+  name                = local.vnet_hub_name
   address_space       = ["10.2.0.0/16"]
   location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
+  resource_group_name = local.rg_name
 }
 
 resource "azurerm_virtual_network" "tertiary" {
-  name                = "${var.name_prefix}-vnet-tertiary"
+  name                = local.vnet_tertiary_name
   address_space       = ["10.1.0.0/16"]
   location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
+  resource_group_name = local.rg_name
 }
 
 resource "azurerm_subnet" "hub" {
-  name                 = "${var.name_prefix}-subnet-hub"
-  resource_group_name  = azurerm_resource_group.main.name
+  name                 = local.subnet_hub_name
+  resource_group_name  = local.rg_name
   virtual_network_name = azurerm_virtual_network.hub.name
   address_prefixes     = ["10.2.1.0/24"]
 }
 
 resource "azurerm_subnet" "main" {
-  name                 = "${var.name_prefix}-subnet"
-  resource_group_name  = azurerm_resource_group.main.name
+  name                 = local.subnet_main_name
+  resource_group_name  = local.rg_name
   virtual_network_name = azurerm_virtual_network.main.name
   address_prefixes     = ["10.0.1.0/24"]
 }
 
 resource "azurerm_subnet" "secondary" {
-  name                 = "${var.name_prefix}-subnet-secondary"
-  resource_group_name  = azurerm_resource_group.main.name
+  name                 = local.subnet_secondary_name
+  resource_group_name  = local.rg_name
   virtual_network_name = azurerm_virtual_network.main.name
   address_prefixes     = ["10.0.2.0/24"]
 }
 
 resource "azurerm_subnet" "tertiary" {
-  name                 = "${var.name_prefix}-subnet-tertiary"
-  resource_group_name  = azurerm_resource_group.main.name
+  name                 = local.subnet_tertiary_name
+  resource_group_name  = local.rg_name
   virtual_network_name = azurerm_virtual_network.tertiary.name
   address_prefixes     = ["10.1.1.0/24"]
 }
 
 resource "azurerm_public_ip" "nat" {
-  name                = "${var.name_prefix}-nat-pip"
+  name                = local.nat_pip_name
   location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
+  resource_group_name = local.rg_name
   allocation_method   = "Static"
   sku                 = "Standard"
 }
 
 resource "azurerm_nat_gateway" "main" {
-  name                = "${var.name_prefix}-nat"
+  name                = local.nat_name
   location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
+  resource_group_name = local.rg_name
   sku_name            = "Standard"
 }
 
@@ -121,49 +149,49 @@ resource "azurerm_subnet_nat_gateway_association" "tertiary" {
 }
 
 resource "azurerm_virtual_network_peering" "hub_to_main" {
-  name                      = "${var.name_prefix}-hub-to-main"
-  resource_group_name       = azurerm_resource_group.main.name
+  name                      = "${local.prefix}-peer-hub-main"
+  resource_group_name       = local.rg_name
   virtual_network_name      = azurerm_virtual_network.hub.name
   remote_virtual_network_id = azurerm_virtual_network.main.id
   allow_forwarded_traffic   = true
 }
 
 resource "azurerm_virtual_network_peering" "main_to_hub" {
-  name                      = "${var.name_prefix}-main-to-hub"
-  resource_group_name       = azurerm_resource_group.main.name
+  name                      = "${local.prefix}-peer-main-hub"
+  resource_group_name       = local.rg_name
   virtual_network_name      = azurerm_virtual_network.main.name
   remote_virtual_network_id = azurerm_virtual_network.hub.id
   allow_forwarded_traffic   = true
 }
 
 resource "azurerm_virtual_network_peering" "hub_to_tertiary" {
-  name                      = "${var.name_prefix}-hub-to-tertiary"
-  resource_group_name       = azurerm_resource_group.main.name
+  name                      = "${local.prefix}-peer-hub-tertiary"
+  resource_group_name       = local.rg_name
   virtual_network_name      = azurerm_virtual_network.hub.name
   remote_virtual_network_id = azurerm_virtual_network.tertiary.id
   allow_forwarded_traffic   = true
 }
 
 resource "azurerm_virtual_network_peering" "tertiary_to_hub" {
-  name                      = "${var.name_prefix}-tertiary-to-hub"
-  resource_group_name       = azurerm_resource_group.main.name
+  name                      = "${local.prefix}-peer-tertiary-hub"
+  resource_group_name       = local.rg_name
   virtual_network_name      = azurerm_virtual_network.tertiary.name
   remote_virtual_network_id = azurerm_virtual_network.hub.id
   allow_forwarded_traffic   = true
 }
 
 resource "azurerm_public_ip" "jumpbox" {
-  name                = "${var.name_prefix}-jumpbox-pip"
+  name                = local.jumpbox_pip_name
   location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
+  resource_group_name = local.rg_name
   allocation_method   = "Static"
   sku                 = "Standard"
 }
 
 resource "azurerm_network_security_group" "jumpbox" {
-  name                = "${var.name_prefix}-jumpbox-nsg"
+  name                = local.jumpbox_nsg_name
   location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
+  resource_group_name = local.rg_name
 
   security_rule {
     name                       = "allow-rdp"
@@ -179,9 +207,9 @@ resource "azurerm_network_security_group" "jumpbox" {
 }
 
 resource "azurerm_network_interface" "jumpbox" {
-  name                = "${var.name_prefix}-jumpbox-nic"
+  name                = local.jumpbox_nic_name
   location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
+  resource_group_name = local.rg_name
 
   ip_configuration {
     name                          = "internal"
@@ -197,12 +225,13 @@ resource "azurerm_network_interface_security_group_association" "jumpbox" {
 }
 
 resource "azurerm_windows_virtual_machine" "jumpbox" {
-  name                = "${var.name_prefix}-jumpbox"
+  name                = local.jumpbox_vm_name
   location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
+  resource_group_name = local.rg_name
   size                = var.jumpbox_vm_size
   admin_username      = var.admin_username
   admin_password      = random_password.admin.result
+  computer_name       = local.jumpbox_computer_name
   network_interface_ids = [
     azurerm_network_interface.jumpbox.id
   ]
@@ -222,9 +251,9 @@ resource "azurerm_windows_virtual_machine" "jumpbox" {
 
 resource "azurerm_network_interface" "vm" {
   count               = 2
-  name                = "${var.name_prefix}-nic-${count.index + 1}"
+  name                = "${local.vm_primary_nic_prefix}-${count.index + 1}"
   location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
+  resource_group_name = local.rg_name
 
   ip_configuration {
     name                          = "internal"
@@ -235,12 +264,13 @@ resource "azurerm_network_interface" "vm" {
 
 resource "azurerm_windows_virtual_machine" "vm" {
   count               = 2
-  name                = "${var.name_prefix}-vm-${count.index + 1}"
+  name                = "${local.vm_primary_name_prefix}-${count.index + 1}"
   location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
+  resource_group_name = local.rg_name
   size                = var.vm_size
   admin_username      = var.admin_username
   admin_password      = random_password.admin.result
+  computer_name       = local.primary_computer_names[count.index]
   network_interface_ids = [
     azurerm_network_interface.vm[count.index].id
   ]
@@ -261,9 +291,9 @@ resource "azurerm_windows_virtual_machine" "vm" {
 
 resource "azurerm_network_interface" "secondary_vm" {
   count               = 2
-  name                = "${var.name_prefix}-secondary-nic-${count.index + 1}"
+  name                = "${local.vm_secondary_nic_prefix}-${count.index + 1}"
   location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
+  resource_group_name = local.rg_name
 
   ip_configuration {
     name                          = "internal"
@@ -274,12 +304,13 @@ resource "azurerm_network_interface" "secondary_vm" {
 
 resource "azurerm_windows_virtual_machine" "secondary_vm" {
   count               = 2
-  name                = "${var.name_prefix}-secondary-vm-${count.index + 1}"
+  name                = "${local.vm_secondary_name_prefix}-${count.index + 1}"
   location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
+  resource_group_name = local.rg_name
   size                = var.vm_size
   admin_username      = var.admin_username
   admin_password      = random_password.admin.result
+  computer_name       = local.secondary_computer_names[count.index]
   network_interface_ids = [
     azurerm_network_interface.secondary_vm[count.index].id
   ]
@@ -298,9 +329,9 @@ resource "azurerm_windows_virtual_machine" "secondary_vm" {
 }
 
 resource "azurerm_network_interface" "tertiary_vm" {
-  name                = "${var.name_prefix}-tertiary-nic-1"
+  name                = local.vm_tertiary_nic_name
   location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
+  resource_group_name = local.rg_name
 
   ip_configuration {
     name                          = "internal"
@@ -310,12 +341,13 @@ resource "azurerm_network_interface" "tertiary_vm" {
 }
 
 resource "azurerm_windows_virtual_machine" "tertiary_vm" {
-  name                = "${var.name_prefix}-tertiary-vm-1"
+  name                = local.vm_tertiary_name
   location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
+  resource_group_name = local.rg_name
   size                = var.vm_size
   admin_username      = var.admin_username
   admin_password      = random_password.admin.result
+  computer_name       = local.tertiary_computer_name
   network_interface_ids = [
     azurerm_network_interface.tertiary_vm.id
   ]
