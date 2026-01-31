@@ -47,6 +47,13 @@ resource "azurerm_subnet" "firewall" {
   address_prefixes     = ["10.2.2.0/24"]
 }
 
+resource "azurerm_subnet" "bastion" {
+  name                 = local.subnet_bastion_name
+  resource_group_name  = local.rg_name
+  virtual_network_name = azurerm_virtual_network.hub.name
+  address_prefixes     = ["10.2.3.0/27"]
+}
+
 resource "azurerm_subnet" "main" {
   name                 = local.subnet_main_name
   resource_group_name  = local.rg_name
@@ -153,23 +160,24 @@ resource "azurerm_virtual_network_peering" "tertiary_to_hub" {
   allow_forwarded_traffic   = true
 }
 
-resource "azurerm_public_ip" "jumpbox" {
-  name                = local.jumpbox_pip_name
+resource "azurerm_public_ip" "bastion" {
+  name                = local.bastion_pip_name
   location            = azurerm_resource_group.main.location
   resource_group_name = local.rg_name
   allocation_method   = "Static"
   sku                 = "Standard"
 }
 
-resource "azurerm_network_security_group" "jumpbox" {
-  name                = "nsg-jumpbox"
+resource "azurerm_bastion_host" "main" {
+  name                = local.bastion_name
   location            = azurerm_resource_group.main.location
   resource_group_name = local.rg_name
-}
 
-resource "azurerm_network_interface_security_group_association" "jumpbox" {
-  network_interface_id      = module.jumpbox_vm.nic_id
-  network_security_group_id = azurerm_network_security_group.jumpbox.id
+  ip_configuration {
+    name                 = "configuration"
+    subnet_id            = azurerm_subnet.bastion.id
+    public_ip_address_id = azurerm_public_ip.bastion.id
+  }
 }
 
 module "jumpbox_vm" {
@@ -180,7 +188,6 @@ module "jumpbox_vm" {
   location            = azurerm_resource_group.main.location
   resource_group_name = local.rg_name
   subnet_id           = azurerm_subnet.hub.id
-  public_ip_id        = azurerm_public_ip.jumpbox.id
   vm_size             = var.jumpbox_vm_size
   admin_username      = var.admin_username
   admin_password      = random_password.admin.result

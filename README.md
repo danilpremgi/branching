@@ -17,6 +17,6 @@ terraform apply \
 
 ## Notes
 - An Azure Firewall in the hub virtual network handles outbound access via UDRs.
-- A jumpbox VM in the hub virtual network is exposed via a public IP to reach the private VMs.
+- Azure Bastion is deployed in the hub virtual network for secure access to the VMs.
 - VMs are deployed into availability zones 1 and 2 for the primary subnet; secondary subnet VMs are not zonal.
 - The Windows 11 VM is deployed in a separate virtual network and subnet.

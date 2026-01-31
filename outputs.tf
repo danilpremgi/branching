@@ -38,8 +38,8 @@ output "tertiary_vm_private_ip" {
   value = module.tertiary_vm.private_ip
 }
 
-output "jumpbox_public_ip" {
-  value = azurerm_public_ip.jumpbox.ip_address
+output "bastion_public_ip" {
+  value = azurerm_public_ip.bastion.ip_address
 }
 
 output "admin_password" {
