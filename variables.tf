@@ -7,7 +7,7 @@ variable "resource_group_name" {
 variable "location" {
   type        = string
   description = "Azure region to deploy resources into."
-  default     = "UKSouth"
+  default     = "East US"
 }
 
 variable "subscription_id" {
@@ -18,13 +18,13 @@ variable "subscription_id" {
 variable "vm_size" {
   type        = string
   description = "Azure VM size."
-  default     = "Standard_DS1_v2"
+  default     = "Standard_B2ms"
 }
 
 variable "jumpbox_vm_size" {
   type        = string
   description = "Azure VM size for the jumpbox."
-  default     = "Standard_DS1_v2"
+  default     = "Standard_B2ms"
 }
 
 variable "admin_username" {

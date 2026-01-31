@@ -172,6 +172,7 @@ resource "azurerm_bastion_host" "main" {
   name                = local.bastion_name
   location            = azurerm_resource_group.main.location
   resource_group_name = local.rg_name
+  sku                 = "Developer"
 
   ip_configuration {
     name                 = "configuration"
