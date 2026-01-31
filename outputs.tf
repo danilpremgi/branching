@@ -43,13 +43,12 @@ output "jumpbox_public_ip" {
 }
 
 output "admin_password" {
-  value     = random_password.admin.result
+  value     = nonsensitive(random_password.admin.result)
+  sensitive = false
 }
 
 output "nat_gateway_public_ips" {
   value = {
-    hub      = azurerm_public_ip.nat_hub.ip_address
-    main     = azurerm_public_ip.nat_main.ip_address
-    tertiary = azurerm_public_ip.nat_tertiary.ip_address
+    hub = azurerm_public_ip.nat_hub.ip_address
   }
 }

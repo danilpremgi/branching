@@ -27,11 +27,7 @@ locals {
   subnet_secondary_name      = "snet-secondary"
   subnet_tertiary_name       = "snet-tertiary"
   nat_hub_pip_name           = "pip-nat-hub"
-  nat_main_pip_name          = "pip-nat-main"
-  nat_tertiary_pip_name      = "pip-nat-tertiary"
   nat_hub_name               = "natgw-hub"
-  nat_main_name              = "natgw-main"
-  nat_tertiary_name          = "natgw-tertiary"
   jumpbox_pip_name           = "pip-jumpbox"
   jumpbox_nsg_name           = "nsg-jumpbox"
   jumpbox_nic_name           = "nic-jumpbox-01"
@@ -119,38 +115,8 @@ resource "azurerm_public_ip" "nat_hub" {
   sku                 = "Standard"
 }
 
-resource "azurerm_public_ip" "nat_main" {
-  name                = local.nat_main_pip_name
-  location            = azurerm_resource_group.main.location
-  resource_group_name = local.rg_name
-  allocation_method   = "Static"
-  sku                 = "Standard"
-}
-
-resource "azurerm_public_ip" "nat_tertiary" {
-  name                = local.nat_tertiary_pip_name
-  location            = azurerm_resource_group.main.location
-  resource_group_name = local.rg_name
-  allocation_method   = "Static"
-  sku                 = "Standard"
-}
-
 resource "azurerm_nat_gateway" "hub" {
   name                = local.nat_hub_name
-  location            = azurerm_resource_group.main.location
-  resource_group_name = local.rg_name
-  sku_name            = "Standard"
-}
-
-resource "azurerm_nat_gateway" "main" {
-  name                = local.nat_main_name
-  location            = azurerm_resource_group.main.location
-  resource_group_name = local.rg_name
-  sku_name            = "Standard"
-}
-
-resource "azurerm_nat_gateway" "tertiary" {
-  name                = local.nat_tertiary_name
   location            = azurerm_resource_group.main.location
   resource_group_name = local.rg_name
   sku_name            = "Standard"
@@ -161,35 +127,11 @@ resource "azurerm_nat_gateway_public_ip_association" "hub" {
   public_ip_address_id = azurerm_public_ip.nat_hub.id
 }
 
-resource "azurerm_nat_gateway_public_ip_association" "main" {
-  nat_gateway_id       = azurerm_nat_gateway.main.id
-  public_ip_address_id = azurerm_public_ip.nat_main.id
-}
-
-resource "azurerm_nat_gateway_public_ip_association" "tertiary" {
-  nat_gateway_id       = azurerm_nat_gateway.tertiary.id
-  public_ip_address_id = azurerm_public_ip.nat_tertiary.id
-}
-
 resource "azurerm_subnet_nat_gateway_association" "hub" {
   subnet_id      = azurerm_subnet.hub.id
   nat_gateway_id = azurerm_nat_gateway.hub.id
 }
 
-resource "azurerm_subnet_nat_gateway_association" "main" {
-  subnet_id      = azurerm_subnet.main.id
-  nat_gateway_id = azurerm_nat_gateway.main.id
-}
-
-resource "azurerm_subnet_nat_gateway_association" "secondary" {
-  subnet_id      = azurerm_subnet.secondary.id
-  nat_gateway_id = azurerm_nat_gateway.main.id
-}
-
-resource "azurerm_subnet_nat_gateway_association" "tertiary" {
-  subnet_id      = azurerm_subnet.tertiary.id
-  nat_gateway_id = azurerm_nat_gateway.tertiary.id
-}
 
 resource "azurerm_virtual_network_peering" "hub_to_main" {
   name                      = "peer-hub-main"
