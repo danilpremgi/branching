@@ -21,12 +21,6 @@ variable "vm_size" {
   default     = "Standard_B2ms"
 }
 
-variable "jumpbox_vm_size" {
-  type        = string
-  description = "Azure VM size for the jumpbox."
-  default     = "Standard_B2ms"
-}
-
 variable "admin_username" {
   type        = string
   description = "Admin username for the Windows VMs."

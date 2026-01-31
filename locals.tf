@@ -14,11 +14,8 @@ locals {
   route_table_name           = "rt-default"
   bastion_pip_name           = "pip-bastion-01"
   bastion_name               = "bastion-01"
-  jumpbox_nic_name           = "nic-jumpbox-01"
-  jumpbox_vm_name            = "vm-jumpbox-01"
   vm_tertiary_name           = "vm-win11-01"
-  vm_tertiary_nic_name       = "nic-win11-01"
-  jumpbox_computer_name      = "AZJUMP01"
+  vm_tertiary_nic_name       = "nic-vm-win11-01"
   tertiary_computer_name     = "AZW11VM01"
   windows_server_image = {
     publisher = "MicrosoftWindowsServer"
@@ -34,29 +31,29 @@ locals {
   }
   primary_vms = {
     "01" = {
-      vm_name       = "vm-01"
-      nic_name      = "nic-01"
-      computer_name = "AZVM01"
+      vm_name       = "vm-dc-01"
+      nic_name      = "nic-vm-dc-01"
+      computer_name = "DC01"
       zone          = "1"
     }
     "02" = {
-      vm_name       = "vm-02"
-      nic_name      = "nic-02"
-      computer_name = "AZVM02"
+      vm_name       = "vm-dc-02"
+      nic_name      = "nic-vm-dc-02"
+      computer_name = "DC02"
       zone          = "2"
     }
   }
   secondary_vms = {
     "01" = {
-      vm_name       = "vm-secondary-01"
-      nic_name      = "nic-secondary-01"
-      computer_name = "AZSEC01"
+      vm_name       = "rca"
+      nic_name      = "nic-rca-01"
+      computer_name = "RCA"
       zone          = null
     }
     "02" = {
-      vm_name       = "vm-secondary-02"
-      nic_name      = "nic-secondary-02"
-      computer_name = "AZSEC02"
+      vm_name       = "ica"
+      nic_name      = "nic-ica-01"
+      computer_name = "ICA"
       zone          = null
     }
   }

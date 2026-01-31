@@ -181,20 +181,6 @@ resource "azurerm_bastion_host" "main" {
   }
 }
 
-module "jumpbox_vm" {
-  source              = "./modules/vm"
-  vm_name             = local.jumpbox_vm_name
-  computer_name       = local.jumpbox_computer_name
-  nic_name            = local.jumpbox_nic_name
-  location            = azurerm_resource_group.main.location
-  resource_group_name = local.rg_name
-  subnet_id           = azurerm_subnet.hub.id
-  vm_size             = var.jumpbox_vm_size
-  admin_username      = var.admin_username
-  admin_password      = random_password.admin.result
-  source_image_reference = local.windows_server_image
-}
-
 module "primary_vms" {
   source              = "./modules/vm"
   for_each            = local.primary_vms
