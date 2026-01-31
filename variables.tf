@@ -10,6 +10,11 @@ variable "location" {
   default     = "UKSouth"
 }
 
+variable "subscription_id" {
+  type        = string
+  description = "Azure subscription ID for the deployment."
+}
+
 variable "vm_size" {
   type        = string
   description = "Azure VM size."

@@ -9,8 +9,10 @@ This repository provisions Azure infrastructure in UK South with a hub-and-spoke
 ## Usage
 ```bash
 terraform init
-terraform plan
-terraform apply
+terraform plan \
+  -var "subscription_id=00000000-0000-0000-0000-000000000000"
+terraform apply \
+  -var "subscription_id=00000000-0000-0000-0000-000000000000"
 ```
 
 ## Notes
