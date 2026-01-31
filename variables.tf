@@ -7,7 +7,7 @@ variable "resource_group_name" {
 variable "location" {
   type        = string
   description = "Azure region to deploy resources into."
-  default     = "UKSouth"
+  default     = "East US"
 }
 
 variable "subscription_id" {
