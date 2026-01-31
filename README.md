@@ -1,6 +1,6 @@
 # branching
 
-This repository provisions Azure infrastructure in UK South with a hub-and-spoke topology, two Windows Server 2022 VMs split across availability zones, two additional Windows Server 2022 VMs on a separate subnet without availability zones, and a third virtual network hosting a single Windows 11 VM.
+This repository provisions Azure infrastructure in East US with a hub-and-spoke topology, two Windows Server 2022 VMs split across availability zones, two additional Windows Server 2022 VMs on a separate subnet without availability zones, and a third virtual network hosting a single Windows 11 VM.
 
 ## Prerequisites
 - Terraform >= 1.5
