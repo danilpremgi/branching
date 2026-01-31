@@ -11,19 +11,19 @@ output "hub_virtual_network_name" {
 }
 
 output "vm_names" {
-  value = azurerm_windows_virtual_machine.vm[*].name
+  value = [for vm in module.primary_vms : vm.vm_name]
 }
 
 output "vm_private_ips" {
-  value = azurerm_network_interface.vm[*].private_ip_address
+  value = [for vm in module.primary_vms : vm.private_ip]
 }
 
 output "secondary_vm_names" {
-  value = azurerm_windows_virtual_machine.secondary_vm[*].name
+  value = [for vm in module.secondary_vms : vm.vm_name]
 }
 
 output "secondary_vm_private_ips" {
-  value = azurerm_network_interface.secondary_vm[*].private_ip_address
+  value = [for vm in module.secondary_vms : vm.private_ip]
 }
 
 output "tertiary_virtual_network_name" {
@@ -31,11 +31,11 @@ output "tertiary_virtual_network_name" {
 }
 
 output "tertiary_vm_name" {
-  value = azurerm_windows_virtual_machine.tertiary_vm.name
+  value = module.tertiary_vm.vm_name
 }
 
 output "tertiary_vm_private_ip" {
-  value = azurerm_network_interface.tertiary_vm.private_ip_address
+  value = module.tertiary_vm.private_ip
 }
 
 output "jumpbox_public_ip" {

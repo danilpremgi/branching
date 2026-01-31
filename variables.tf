@@ -22,12 +22,6 @@ variable "jumpbox_vm_size" {
   default     = "Standard_DS1_v2"
 }
 
-variable "jumpbox_allowed_cidr" {
-  type        = string
-  description = "CIDR range allowed to RDP to the jumpbox."
-  default     = "0.0.0.0/0"
-}
-
 variable "admin_username" {
   type        = string
   description = "Admin username for the Windows VMs."
