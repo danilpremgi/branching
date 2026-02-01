@@ -1,6 +1,6 @@
-module "primary_vms" {
+module "dc_vms" {
   source                 = "./modules/vm"
-  for_each               = local.primary_vms
+  for_each               = local.dc_vms
   vm_name                = each.value.vm_name
   computer_name          = each.value.computer_name
   nic_name               = each.value.nic_name
@@ -14,9 +14,9 @@ module "primary_vms" {
   source_image_reference = local.windows_server_image
 }
 
-module "secondary_vms" {
+module "ca_vms" {
   source                 = "./modules/vm"
-  for_each               = local.secondary_vms
+  for_each               = local.ca_vms
   vm_name                = each.value.vm_name
   computer_name          = each.value.computer_name
   nic_name               = each.value.nic_name
