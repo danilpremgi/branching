@@ -1,7 +1,7 @@
 variable "resource_group_name" {
   type        = string
   description = "Name of the resource group."
-  default     = "rg-uksouth-windows"
+  default     = "rg-ca-ukso-01"
 }
 
 variable "location" {
