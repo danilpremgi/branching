@@ -11,19 +11,19 @@ output "hub_virtual_network_name" {
 }
 
 output "vm_names" {
-  value = [for vm in module.primary_vms : vm.vm_name]
+  value = [for vm in module.dc_vms : vm.vm_name]
 }
 
 output "vm_private_ips" {
-  value = [for vm in module.primary_vms : vm.private_ip]
+  value = [for vm in module.dc_vms : vm.private_ip]
 }
 
-output "secondary_vm_names" {
-  value = [for vm in module.secondary_vms : vm.vm_name]
+output "ca_vm_names" {
+  value = [for vm in module.ca_vms : vm.vm_name]
 }
 
-output "secondary_vm_private_ips" {
-  value = [for vm in module.secondary_vms : vm.private_ip]
+output "ca_vm_private_ips" {
+  value = [for vm in module.ca_vms : vm.private_ip]
 }
 
 output "tertiary_virtual_network_name" {

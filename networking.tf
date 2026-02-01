@@ -47,8 +47,8 @@ resource "azurerm_subnet" "main" {
   address_prefixes     = ["10.0.1.0/24"]
 }
 
-resource "azurerm_subnet" "secondary" {
-  name                 = local.subnet_secondary_name
+resource "azurerm_subnet" "ca" {
+  name                 = local.subnet_ca_name
   resource_group_name  = local.rg_name
   virtual_network_name = azurerm_virtual_network.main.name
   address_prefixes     = ["10.0.2.0/24"]
@@ -81,8 +81,8 @@ resource "azurerm_subnet_route_table_association" "main" {
   route_table_id = azurerm_route_table.egress.id
 }
 
-resource "azurerm_subnet_route_table_association" "secondary" {
-  subnet_id      = azurerm_subnet.secondary.id
+resource "azurerm_subnet_route_table_association" "ca" {
+  subnet_id      = azurerm_subnet.ca.id
   route_table_id = azurerm_route_table.egress.id
 }
 

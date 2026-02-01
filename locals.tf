@@ -7,7 +7,7 @@ locals {
   subnet_firewall_name   = "AzureFirewallSubnet"
   subnet_bastion_name    = "AzureBastionSubnet"
   subnet_main_name       = "snet-main"
-  subnet_secondary_name  = "snet-secondary"
+  subnet_ca_name         = "snet-ca"
   subnet_tertiary_name   = "snet-tertiary"
   firewall_pip_name      = "pip-azfw-01"
   firewall_name          = "azfw-01"

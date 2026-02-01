@@ -22,7 +22,7 @@ module "ca_vms" {
   nic_name               = each.value.nic_name
   location               = azurerm_resource_group.main.location
   resource_group_name    = local.rg_name
-  subnet_id              = azurerm_subnet.secondary.id
+  subnet_id              = azurerm_subnet.ca.id
   vm_size                = var.vm_size
   admin_username         = var.admin_username
   admin_password         = random_password.admin.result
